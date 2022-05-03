@@ -1,0 +1,662 @@
+﻿
+create database QuanLyDuAn;
+go
+use QuanLyDuAn
+go
+create table ChiNhanh
+(MaCN	char(4) primary key,
+TenCN	nvarchar(30)
+)
+
+create table ChucVu
+(MaCV	char(4) primary key,
+TenCV nvarchar(30) not null,
+TienLuong int not null
+)
+
+create table NhanVien
+(MaNV	char(4) primary key,
+Ho		nvarchar(20),
+Ten		nvarchar(10),
+NgaySinh Datetime,
+DiaChi		nvarchar(50),
+MaCV		char(4) references ChucVu(MaCV),
+MaCN char(4) references ChiNhanh(MaCN)
+)
+
+
+create table DuAn
+(MaDA		char(4) primary key,
+TenDA		nvarchar(20),
+MaCN	char(4) references ChiNhanh(MaCN),
+NgayBD		Datetime,
+Kinhphi	int
+)
+
+
+create table PhanCong
+(MaDA	char(4),
+MaNV	char(4),
+CongViec	nvarchar(30),
+NgayBD Datetime,
+NgayKT Datetime,
+constraint PhanCong_pk primary key (MaDA, MaNV),
+constraint fk_mada_phancong FOREIGN KEY (MaDA) REFERENCES DuAn (MaDA),
+constraint fk_manv_nhanvien FOREIGN KEY (MaNV) REFERENCES NhanVien (MaNV)
+
+)
+
+-------------------
+select * from ChiNhanh
+select * from NhanVien
+select * from ChucVu
+select * from PhanCong
+select * from DuAn
+
+/*===============================================THÊM DỮ LIỆU VÀO BẢNG========================================*/
+----------THÊM CHI NHÁNH: SINH MÃ TỰ ĐỘNG------------
+create function SinhMaCN() returns char(4)
+As
+Begin
+	declare @MaxMaCN char(4)
+	declare @NewMaCN varchar(4)
+	declare @stt	int
+	declare @i	int	
+	declare @sokyso	int
+
+	if exists(select * from ChiNhanh)---Nếu bảng có dữ liệu
+	 begin
+		--Lấy mã lớn nhất hiện có
+		select @MaxMaCN = max(MaCN) 
+		from ChiNhanh
+		--Trích phần ký số của mã lớn nhất và chuyển thành số 
+		set @stt=convert(int, right(@MaxMaCN,2)) + 1 --Số thứ tự của chi nhánh mới
+	 end
+	else--Nếu bảng chi nhánh đang rỗng 
+	 set @stt= 1 -- Số thứ tự của chi nhánh trường hợp chưa có chi nhánh nào trong CSDL
+	--Kiểm tra và bổ sung chữ số 0 để đủ 2 ký số trong mã chi nhánh.
+	set @sokyso = len(convert(varchar(2), @stt))
+	set @NewMaCN='CN'
+	set @i = 0
+	while @i < 2 -@sokyso
+		begin
+			set @NewMaCN = @NewMaCN + '0'
+			set @i = @i + 1
+		end	
+	set @NewMaCN = @NewMaCN + convert(varchar(2), @stt)
+
+return @NewMaCN	
+End
+--Thử hàm sinh mã
+print dbo.SinhMaCN()
+----Thủ  tục thêm chi nhánh với mã chi nhánh được sinh tự động----
+CREATE PROC usp_ThemChiNhanh
+@TenCN nvarchar(30)
+As
+	declare @MaCN char(4)
+	
+ if not exists(select * from ChiNhanh 
+				where TenCN = @TenCN)
+	Begin
+		
+		--sinh mã cho chi nhánh mới
+		set @MaCN = dbo.SinhMaCN()
+		insert into ChiNhanh values(@MaCN, @TenCN)
+		print N'Đã thêm Chi Nhanh thành công'
+	End
+else
+	print N'Đã có Chi Nhanh ' + @TenCN + ' trong CSDL'
+
+---Sử dụng thủ tục thêm chi nhánh
+exec usp_ThemChiNhanh N'Tp. Hồ Chí Minh'
+exec usp_ThemChiNhanh N'Đà Lạt'
+select * from ChiNhanh
+--UPDATE chi nhánh
+CREATE PROC usp_ChinhSuaChiNhanh
+@MaCN char(4),
+@TenCN nvarchar(30)
+AS
+	IF NOT EXISTS (SELECT * FROM ChiNhanh WHERE MaCN = @MaCN)
+		PRINT N'Không tồn tại chi nhánh!'
+	ELSE
+		BEGIN
+			UPDATE ChiNhanh
+			SET TenCN = @TenCN
+			WHERE MaCN = @MaCN;
+			PRINT N'Cập nhật dữ liệu thành công!'
+		END
+GO
+
+EXEC usp_ChinhSuaChiNhanh 'CN01', N'Tp.HCM';
+SELECT * FROM ChiNhanh WHERE MaCN = 'CN01';
+
+
+
+
+
+----------THÊM CHỨC VỤ SINH MÃ TỰ ĐỘNG-------------
+create function SinhMaCV() returns char(4)
+As
+Begin
+	declare @MaxMaCV char(4)
+	declare @NewMaCV varchar(4)
+	declare @stt	int
+	declare @i	int	
+	declare @sokyso	int
+
+	if exists(select * from ChucVu)
+	 begin
+		select @MaxMaCV = max(MaCV) 
+		from ChucVu
+		set @stt=convert(int, right(@MaxMaCV,2)) + 1 
+	 end
+	else
+	 set @stt= 1 
+	set @sokyso = len(convert(varchar(2), @stt))
+	set @NewMaCV='CV'
+	set @i = 0
+	while @i < 2 -@sokyso
+		begin
+			set @NewMaCV = @NewMaCV + '0'
+			set @i = @i + 1
+		end	
+	set @NewMaCV = @NewMaCV + convert(varchar(2), @stt)
+
+return @NewMaCV	
+End
+--Thử hàm sinh mã
+print dbo.SinhMaCV()
+--Thủ tục thêm chức vụ
+CREATE PROC usp_ThemChucVu
+@TenCV nvarchar(30), @TienLuong int
+As
+	declare @MaCV char(4)
+	
+ if not exists(select * from ChucVu 
+				where TenCV = @TenCV and TienLuong = @TienLuong)
+	Begin
+		
+		set @MaCV = dbo.SinhMaCV()
+		insert into ChucVu values(@MaCV, @TenCV, @TienLuong)
+		print N'Đã thêm Chức Vụ thành công'
+	End
+else
+	print N'Đã có Chức Vụ ' + @TenCV + ' ' + @TienLuong + ' trong CSDL'
+
+exec usp_ThemChucVu N'Trưởng Phòng', '1000000'
+exec usp_ThemChucVu N'Phó phòng', '500000'
+exec usp_ThemChucVu N'Nhân Viên', '300000'
+
+select * from ChucVu
+
+--UPDATE CHỨC VỤ
+CREATE PROC usp_ChinhSuaChucVu
+@MaCV char(4),
+@TenCV nvarchar(30),
+@TienLuong int
+AS
+	IF NOT EXISTS (SELECT * FROM ChucVu WHERE MaCV = @MaCV)
+		PRINT N'Không tồn tại chức vụ!'
+	ELSE
+		BEGIN
+			UPDATE ChucVu
+			SET TenCV = @TenCV,
+			TienLuong = @TienLuong
+			WHERE MaCV = @MaCV;
+			PRINT N'Cập nhật dữ liệu thành công!'
+		END
+GO
+
+EXEC usp_ChinhSuaChucVu 'cv01', N'Trưởng Phòng', '1500000';
+SELECT * FROM ChucVu WHERE MaCV = 'CV01';
+
+-------------THÊM DỰ ÁN SINH MÃ TỰ ĐỘNG------------
+create function SinhMaDA() returns char(4)
+As
+Begin
+	declare @MaxMaDA char(4)
+	declare @NewMaDA varchar(4)
+	declare @stt	int
+	declare @i	int	
+	declare @sokyso	int
+
+	if exists(select * from DuAn)
+	 begin
+		select @MaxMaDA = max(MaDA) 
+		from DuAn
+		set @stt=convert(int, right(@MaxMaDA,2)) + 1 
+	 end
+	else
+	 set @stt= 1 
+	set @sokyso = len(convert(varchar(2), @stt))
+	set @NewMaDA='DA'
+	set @i = 0
+	while @i < 2 -@sokyso
+		begin
+			set @NewMaDA = @NewMaDA + '0'
+			set @i = @i + 1
+		end	
+	set @NewMaDA = @NewMaDA + convert(varchar(2), @stt)
+
+return @NewMaDA
+End
+--Thử hàm sinh mã
+print dbo.SinhMaDA()
+---- Thủ  tục thêm dự án sinh mã tự động
+CREATE PROC usp_ThemDuAn
+@TenDA		nvarchar(20),
+@MaCN char(4),
+@NgayBD		Datetime,
+@Kinhphi	int
+As
+	declare @MaDA char(4)
+	
+ If exists(select * from ChiNhanh where MaCN = @MaCN)--kiểm tra các RBTV khóa ngoại
+	  Begin
+				set @MaDA= dbo.SinhMaDA()
+				insert into DuAn values(@MaDA, @TenDA, @MaCN, @NgayBD, @Kinhphi)
+				print N'Thêm Dự án thành công.'
+			
+	  End
+	Else -- Bị vi phạm ràng buộc khóa ngoại
+		if not exists(select * from ChiNhanh where MaCN = @MaCN)
+				print N'Không có mã chi nhánh '+@MaCN+' trong CSDL.'
+
+---Sử dụng thủ tục thêm dự án
+set dateformat dmy
+go
+exec usp_ThemDuAn N'Quản lý dự án', 'CN01' ,'15/03/2022',50000000
+exec usp_ThemDuAn N'Website bán cây cảnh','CN01' ,'25/07/2022', 6000000
+exec usp_ThemDuAn N'Website bán quần áo','CN02' ,'30/08/2022', 8000000
+
+select * from DuAn
+
+--UPDATE DỰ ÁN
+CREATE PROC usp_ChinhSuaDuAn
+@MaDA char(4),
+@TenDA		nvarchar(20),
+@NgayBD		Datetime,
+@Kinhphi	int
+AS
+	IF NOT EXISTS (SELECT * FROM DuAn WHERE MaDA = @MaDA)
+		PRINT N'Không tồn tại chức vụ!'
+	ELSE
+		BEGIN
+			UPDATE DuAn
+			SET TenDA = @TenDA,
+			NgayBD = @NgayBD,
+			Kinhphi = @Kinhphi
+			WHERE MaDA = @MaDA;
+			PRINT N'Cập nhật dữ liệu thành công!'
+		END
+GO
+set dateformat dmy
+EXEC usp_ChinhSuaDuAn 'DA01', N'Quản lý dự án', '15/03/2022',60000000
+SELECT * FROM DuAn WHERE MaDA = 'DA01';
+
+
+--------------THÊM NHÂN VIÊN SINH MÃ TỰ ĐỘNG-----------
+
+create function SinhMaNV() returns char(4)
+As
+Begin
+	declare @MaxMaNV char(4)
+	declare @NewMaNV varchar(4)
+	declare @stt	int
+	declare @i	int	
+	declare @sokyso	int
+
+	if exists(select * from NhanVien)
+	 begin
+		select @MaxMaNV = max(MaNV) 
+		from NhanVien
+		set @stt=convert(int, right(@MaxMaNV,2)) + 1 
+	 end
+	else
+	 set @stt= 1 
+	set @sokyso = len(convert(varchar(2), @stt))
+	set @NewMaNV='NV'
+	set @i = 0
+	while @i < 2 -@sokyso
+		begin
+			set @NewMaNV = @NewMaNV + '0'
+			set @i = @i + 1
+		end	
+	set @NewMaNV = @NewMaNV + convert(varchar(2), @stt)
+
+return @NewMaNV
+End
+--Thử hàm sinh mã
+print dbo.SinhMaNV()
+----Thủ  tục thêm nhân viên sinh mã tự động----
+CREATE PROC usp_ThemNhanVien
+@Ho	nvarchar(20),
+@Ten nvarchar(10),
+@NgaySinh Datetime,
+@DiaChi	nvarchar(50),
+@MaCV char(4),
+@MaCN char(4)
+As
+	declare @MaNV char(4)
+	If exists(select * from ChiNhanh where MaCN = @MaCN) and exists(select * from ChucVu where MaCV =@MaCV)--kiểm tra các RBTV khóa ngoại
+	  Begin
+				set @MaNV = dbo.SinhMaNV()
+				insert into NhanVien values(@MaNV, @Ho, @Ten, @NgaySinh, @DiaChi, @MaCV, @MaCN)
+				print N'Thêm Nhân Viên thành công.'
+			
+	  End
+	Else -- Bị vi phạm ràng buộc khóa ngoại
+		if not exists(select * from ChiNhanh where MaCN = @MaCN)
+				print N'Không có mã chi nhánh '+@MaCN+' trong CSDL.'
+		else	print N'Không có mã chức vụ '+@MaCV+' trong CSDL.'
+
+---Sử dụng thủ tục thêm nhân viên
+set dateformat dmy
+go
+exec usp_ThemNhanVien N'Hoàng Thị Hồng', N'Nhung', '25/07/2000', N'Ninh Bình', 'CV01', 'CN02'
+exec usp_ThemNhanVien N'Nguyễn Minh', N'Nghiệm', '08/03/2000', N'Đà Lạt', 'CV02', 'CN02'
+exec usp_ThemNhanVien N'Nguyễn Bình Phương', N'Nguyên','30/07/2000', N'Đà Lạt', 'CV03', 'CN01'
+
+select * from NhanVien
+
+--UPDATE Cho phép chuyển nhân viên sang chi nhánh khác
+
+CREATE PROC usp_ChinhSuaNhanVien
+@MaNV char(4),
+@Ho		nvarchar(20),
+@Ten	nvarchar(10),
+@NgaySinh Datetime,
+@DiaChi		nvarchar(50),
+@MaCV		char(4),
+@MaCN char(4)
+AS
+	IF NOT EXISTS (SELECT * FROM NhanVien WHERE MaNV = @MaNV)
+		PRINT N'Không tồn tại nhân viên!'
+	ELSE IF NOT EXISTS (SELECT * FROM ChiNhanh WHERE MaCN = @MaCN)
+		PRINT N'Không tồn tại Chi nhánh!'
+	ELSE IF NOT EXISTS (SELECT * FROM ChucVu WHERE MaCV = @MaCV)
+		PRINT N'Không tồn tại chức vụ!'
+	ELSE
+		BEGIN
+			UPDATE NhanVien
+			SET Ho = @Ho,
+			Ten = @Ten,
+			NgaySinh = @NgaySinh,
+			DiaChi = @DiaChi,
+			MaCV = @MaCV,
+			MaCN = @MaCN
+			WHERE MaNV = @MaNV;
+			PRINT N'Cập nhật dữ liệu thành công!'
+		END
+GO
+
+exec usp_ChinhSuaNhanVien 'NV01', N'Hoàng Thị Hồng', N'Nhung', '2000/07/25', 'Ninh Bình', 'CV01', 'CN01'
+SELECT * FROM NhanVien WHERE MaNV = 'NV01';
+
+----------THÊM PHÂN CÔNG: NGÀY BẮT ĐẦU KHÔNG ĐƯỢC LỚN HƠN NGÀY KẾT THÚC -------
+Create trigger tr_PhanCong_ins_upd_NgayBD_NgayKT
+On PhanCong  for insert, update
+As
+if  update(NgayBD) or update (NgayKT)
+	     if exists(select * from inserted i where i.NgayBD>i.NgayKT)	
+	      begin
+	    	     raiserror (N'Ngày bắt đầu công việc không được lớn hơn ngày kết thúc công việc',15,1)
+		     rollback tran
+	      end
+go	
+
+--Thủ tục phân công
+CREATE PROC usp_PhanCong
+@MaDA	char(4),
+@MaNV	char(4),
+@CongViec	nvarchar(30),
+@NgayBD Datetime,
+@NgayKT Datetime
+As
+	If exists(select * from DuAn where MaDA = @MaDA) and exists(select * from NhanVien where MaNV =@MaNV)--kiểm tra các RBTV khóa ngoại
+	  Begin
+				insert into PhanCong values(@MaDA, @MaNV, @CongViec, @NgayBD, @NgayKT)
+				print N'Thêm phân công thành công.'
+			
+	  End
+	Else -- Bị vi phạm ràng buộc khóa ngoại
+		if not exists(select * from DuAn where MaDA = @MaDA)
+				print N'Không có mã dự án '+@MaDA+' trong CSDL.'
+		else	print N'Không có mã nhân viên '+@MaNV +' trong CSDL.'
+
+---Sử dụng thủ tục thêm phân công
+set dateformat dmy
+go
+exec usp_PhanCong 'DA02', 'NV01', N'Thiết kế font-end', '25/07/2022', '30/07/2022'
+exec usp_PhanCong 'DA02', 'NV02', N'Thiết kế back-end', '25/07/2022', '30/07/2022'
+exec usp_PhanCong 'DA02', 'NV03', N'Kiểm thử', '01/08/2022', '05/08/2022'
+exec usp_PhanCong 'DA01', 'NV01', N'Thiết kế csdl', '05/08/2022', '05/09/2022'
+exec usp_PhanCong 'DA03', 'NV01', N'Thiết kế csdl', '01/09/2022', '05/09/2022'
+select * from PhanCong
+
+
+
+
+
+
+
+
+--Danh sách nhân viên tham gia một dự án
+CREATE PROC sp_DS_NVthamgiamotduan
+(
+@MaDA varchar(4)
+)
+AS
+BEGIN
+SELECT * FROM NhanVien
+inner join PhanCong on NhanVien.MaNV=PhanCong.MaNV
+inner join DuAn on DuAn.MaDA=PhanCong.MaDA
+where DuAn.MaDA=@MaDA
+END
+GO
+
+CREATE PROC sp_DS_NVthamgiamotduanpt
+(
+@MaDA varchar(4)
+)
+AS
+BEGIN
+SELECT nv.*,mada.MaDA
+FROM NhanVien nv
+join (Select pc.MaNV,pc.MaDA
+		FROM PhanCong pc 
+		join (Select * from DuAn da Where da.MaDA=@MaDA) dapc 
+		on dapc.MaDA=pc.MaDA ) mada
+		on mada.MaNV=nv.MaNV
+END
+GO
+
+
+
+
+
+
+--Tiền lương nv từng tháng trong năm
+CREATE PROC sp_TienluongNVtheothang
+(
+	@Month INT,
+	@Year INT
+)
+AS 
+	BEGIN
+		SELECT PhanCong.MaNV, MONTH(PhanCong.NgayBD), SUM((-DATEDIFF(DAYOFYEAR,PhanCong.NgayKT,PhanCong.NgayBD)) * ChucVu.TienLuong) AS Tienluong
+		FROM  PhanCong 
+		JOIN NhanVien ON PhanCong.MaNV = NhanVien.MaNV
+		JOIN  ChucVu ON	NhanVien.MaCV = ChucVu.MaCV
+		WHERE MONTH(NgayBD) = @Month and YEAR(NgayBD)=@Year
+		GROUP BY MONTH(PhanCong.NgayBD), PhanCong.MaNV
+	END
+GO
+
+EXEC sp_TienluongNVtheothang 8,2022
+GO
+
+
+CREATE PROC sp_TienluongNVtheothangpt
+(
+	@Month INT,
+	@Year INT
+)
+AS 
+	BEGIN
+		SELECT pc.MaNV, MONTH(pc.NgayBD), SUM((-DATEDIFF(DAYOFYEAR,pc.NgayKT,pc.NgayBD)) * manv.TienLuong) AS Tienluong
+		FROM PhanCong pc
+		join (Select nv.MaNV, nvcv.TienLuong
+				FROM NhanVien nv
+				join (select cv.MaCV,cv.TienLuong from ChucVu cv) nvcv
+				on nv.MaCV=nvcv.MaCV) manv
+				on manv.MaNV=pc.MaNV
+				WHERE MONTH(NgayBD) = @Month and YEAR(NgayBD)=@Year
+				GROUP BY MONTH(pc.NgayBD), pc.MaNV
+	END
+GO
+
+--Chuyển nhân viên sang chi nhánh khách
+CREATE PROC sp_ChuyenNVsangCN
+(
+@MaNV varchar(4),
+@MaCN varchar(4)
+)
+AS
+BEGIN
+UPDATE NhanVien set MaCN = @MaCN  WHERE MaNV = @MaNV;
+			PRINT N'Cập nhật dữ liệu thành công!'
+END
+GO
+exec usp_ChinhSuaNhanVien 'NV01', N'Hoàng Thị Hồng', N'Nhung', '2000/07/25', 'Ninh Bình', 'CV01', 'CN01'
+
+
+--Thống kê dự án nhân viên tham gia trong khoảng thời gian
+CREATE PROC sp_Duan_FromDateToDate
+@fromDate DATE, @toDate DATE
+AS
+BEGIN
+   	SELECT DISTINCT DuAn.*, PhanCong.* FROM DuAn
+	JOIN PhanCong ON DuAn.MaDA = PhanCong.MaDA
+	JOIN NhanVien ON NhanVien.MaNV = PhanCong.MaNV
+	WHERE 
+		DuAn.MaDA IS NOT NULL AND 
+		PhanCong.NgayBD BETWEEN @fromDate AND @toDate OR PhanCong.NgayKT BETWEEN @fromDate AND @toDate
+END
+GO
+EXEC sp_Duan_FromDateToDate '20220725' ,'20220801'
+EXEC sp_Duan_FromDateToDate '20220902' ,'20220904'
+
+
+CREATE PROC sp_Duan_FromDateToDatept
+(
+@fromDate DATE, @toDate DATE
+)
+AS
+BEGIN
+   	SELECT da.*, manv.*
+	From DuAn da
+	join (Select pc.MaDA,pc.NgayBD,pc.NgayKT,nvpc.*
+			from PhanCong pc
+			join (Select * from NhanVien nv) nvpc
+			on pc.MaNV=nvpc.MaNV) manv
+			on manv.MaDA=DA.MaDA
+			where da.MaDA IS NOT NULL AND manv.NgayBD BETWEEN @fromDate AND @toDate OR manv.NgayKT BETWEEN @fromDate AND @toDate
+END
+
+
+--Nhân viên tham gia nhiều dự án nhất
+CREATE proc sp_NVthamgianhieuDA
+as
+	begin
+		SELECT Top 1 NhanVien.MaNV ,COUNT(NhanVien.MaNV) as Soduan
+		FROM  PhanCong 
+		JOIN NhanVien ON PhanCong.MaNV = NhanVien.MaNV
+		group by NhanVien.MaNV
+		order by Soduan desc
+	end
+go
+
+EXEC sp_NVthamgianhieuDA
+--Nhân viên có thu nhập cao nhất
+CREATE PROC sp_NVthunhapcaonhat
+(
+	@Year INT
+)
+AS 
+	BEGIN
+		SELECT Top 2 PhanCong.MaNV, SUM((-DATEDIFF(DAYOFYEAR,PhanCong.NgayKT,PhanCong.NgayBD)) * ChucVu.TienLuong) AS Tienluong
+		FROM  PhanCong 
+		JOIN NhanVien ON PhanCong.MaNV = NhanVien.MaNV
+		JOIN  ChucVu ON	NhanVien.MaCV = ChucVu.MaCV
+		WHERE YEAR(NgayBD)=@Year
+		GROUP BY  PhanCong.MaNV
+	END
+GO
+
+
+CREATE PROC sp_NVthunhapcaonhatpt
+(
+	@Year INT
+)
+AS 
+	BEGIN
+	
+		SELECT Top 6 pc.MaNV, SUM((-DATEDIFF(DAYOFYEAR,pc.NgayKT,pc.NgayBD)) * manv.TienLuong) AS Tienluong
+		FROM PhanCong pc
+		join (Select nv.MaNV, nvcv.TienLuong
+				FROM NhanVien nv
+				join (select cv.MaCV,cv.TienLuong from ChucVu cv) nvcv
+				on nv.MaCV=nvcv.MaCV) manv
+				on manv.MaNV=pc.MaNV
+				WHERE YEAR(NgayBD)=@Year
+				GROUP BY  pc.MaNV
+	END
+GO
+
+
+EXEC sp_NVthunhapcaonhat 2022
+GO
+
+
+
+
+
+
+
+
+
+
+
+
+
+  set dateformat dmy
+go
+insert into DuAn(MaDA,TenDA,MaCN,NgayBD,Kinhphi) VALUES( 'DA05',N'Quản lý shop quần áo', 'CN02' ,'30/04/2022',35000000)
+insert into DuAn(MaDA,TenDA,MaCN,NgayBD,Kinhphi) VALUES( 'DA07',N'Game zombie', 'CN02' ,'02/06/2022',40000000)
+insert into DuAn(MaDA,TenDA,MaCN,NgayBD,Kinhphi) VALUES( 'DA08',N'Nhận dạng khuôn mặt', 'CN02' ,'12/06/2022',000000)
+
+SET DATEFORMAT DMY
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA03','NV02',N'Thiết kế giao diện','06/09/2022','16/09/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA03','NV05',N'Thiết kế giao diện','06/09/2022','16/09/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA03','NV07',N'Kiểm thử','20/09/2022','23/09/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA05','NV02',N'Thu thập tài liệu','30/04/2022','02/05/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA05','NV04',N'Thiết kế csdl','03/05/2022','06/05/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA05','NV09',N'Thiết kế giao diện','07/05/2022','12/05/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA05','NV06',N'Thiết kế giao diện','07/05/2022','12/05/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA05','NV04',N'Thiết kế giao diện','07/05/2022','12/05/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA05','NV01',N'Kiểm thử','13/05/2022','15/05/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA05','NV08',N'Thu thập thông tin khách hàng','17/05/2022','19/05/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA07','NV02',N'Khảo sát khách hàng','02/06/2022','05/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA07','NV07',N'Phác khảo bản vẽ','06/06/2022','10/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA07','NV01',N'Phân tích hệ thống','11/06/2022','15/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA07','NV04',N'Thiết kế giao diện','12/06/2022','18/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA07','NV05',N'Thiết kế giao diện','19/06/2022','23/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA07','NV07',N'Kiểm thử','24/06/2022','28/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA08','NV02',N'Khảo sát khách hàng','02/06/2022','07/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA08','NV06',N'Phác thảo bản vẽ','08/06/2022','11/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA08','NV07',N'Phân tích hệ thống','12/06/2022','17/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA08','NV01',N'Thiết kế hệ thống','18/06/2022','19/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA08','NV04',N'Thiết kế hệ thống','18/06/2022','19/06/2022');
+INSERT INTO PhanCong(MaDA,MaNV,CongViec,NgayBD,NgayKT) VALUES('DA08','NV09',N'Kiểm thử','20/06/2022','25/06/2022');
+

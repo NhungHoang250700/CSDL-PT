@@ -1,0 +1,40 @@
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\bin\Debug\QuanLyDuAn.exe.config
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\bin\Debug\QuanLyDuAn.exe
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\bin\Debug\QuanLyDuAn.pdb
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\bin\Debug\EntityFramework.dll
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\bin\Debug\EntityFramework.SqlServer.dll
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\bin\Debug\EntityFramework.xml
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\bin\Debug\EntityFramework.SqlServer.xml
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.csproj.AssemblyReference.cache
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.Properties.Resources.resources
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.csproj.GenerateResource.cache
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.csproj.CoreCompileInputs.cache
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.csproj.CopyComplete
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.exe
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.pdb
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.LoginForm.resources
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\bin\Debug\QuanLyDuAn.exe.config
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\bin\Debug\QuanLyDuAn.exe
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\bin\Debug\QuanLyDuAn.pdb
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\bin\Debug\EntityFramework.dll
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\bin\Debug\EntityFramework.SqlServer.dll
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\bin\Debug\EntityFramework.xml
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\bin\Debug\EntityFramework.SqlServer.xml
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.csproj.AssemblyReference.cache
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.LoginForm.resources
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.Properties.Resources.resources
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.csproj.GenerateResource.cache
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.csproj.CoreCompileInputs.cache
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.csproj.CopyComplete
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.exe
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.pdb
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.MainForm.resources
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.FormNhanVien.resources
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.FormChucVu.resources
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.FormDuAn.resources
+E:\CSDL-PT\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.FormPhanCong.resources
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.FormChucVu.resources
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.FormDuAn.resources
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.FormNhanVien.resources
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.FormPhanCong.resources
+E:\CSDL-PT\New folder\QuanLyDuAn\QuanLyDuAn\obj\Debug\QuanLyDuAn.MainForm.resources
